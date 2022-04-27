@@ -13,7 +13,7 @@ char str[MAX_SLEN];
 int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况总数的映射
 
 int main() {
-  freopen("D:\\Workspace\\parallel-programming\\final\\input2.txt", "r", stdin);
+  freopen("input.txt", "r", stdin);
   scanf("%d\n", &vn_num);
   scanf("%d\n", &p2_num);
   for (int i = 0; i < p2_num; i++)
@@ -23,6 +23,7 @@ int main() {
   scanf("%d\n", &slen);
   scanf("%s\n", str);
 
+  #pragma omp parallel for schedule(dynamic)
   for (int i = 0; i < slen; ++i) {
     // 枚举所有终结产生式
     for (int k = 0; k < p1_num; ++k) {

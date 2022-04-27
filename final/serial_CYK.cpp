@@ -51,7 +51,7 @@ int string_length;
 
 int main()
 {
-    freopen("D:\\Workspace\\parallel-programming\\final\\input2.txt", "r", stdin);
+    freopen("input.txt", "r", stdin);
     scanf("%d\n", &vn_num);
     scanf("%d\n", &production2_num);
     for (int i = 0; i < production2_num; i++)
