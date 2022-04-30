@@ -2,13 +2,15 @@
 
 using namespace std;
 
+const int MAX_PRODUCTION2_NUM = 512;
+const int MAX_PRODUCTION1_NUM = 128;
 const int MAX_VN = 128;
-const int MAX_VT = 256;
+const int MAX_VT = 128;
 const int MAX_SLEN = 1024;
 
 int vn_num, p2_num, p1_num, slen;
-int p2[MAX_VN][3];
-int p1[MAX_VT][2];
+int p2[MAX_PRODUCTION2_NUM][3];
+int p1[MAX_PRODUCTION1_NUM][2];
 char str[MAX_SLEN];
 int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况总数的映射
 
