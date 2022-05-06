@@ -1,7 +1,8 @@
 #pragma GCC optimize("Ofast")
 #include <algorithm>
+#include <bitset>
 #include <cstdio>
-#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -53,18 +54,23 @@ void omp_for_2(int len, int start) {
 
 // 对于结果总数较小的情况，进行按需计算
 Interval c2i[MAX_VN][MAX_VN];  // 将产生式的两个child，映射到产生式的index范围
-set<int> vn_set[MAX_SLEN][MAX_SLEN];  // 区间 [i, j] 可以由哪些非终结符推导出来
+vector<int> vn_set[MAX_SLEN][MAX_SLEN];  // 区间 [i, j] 可以由哪些非终结符推导出来
 
 void omp_for_3(int index) {
+  bitset<MAX_VN> bst;
   // 枚举所有终结产生式
   for (int k = 0; k < p1_num; ++k) {
     if (str[index] == p1[k].child) {
       dp[index][index][p1[k].parent] = 1;
-      vn_set[index][index].insert(p1[k].parent);
+      bst.set(p1[k].parent);
     }
+  }
+  for (int i = 0; i < vn_num; ++i) {
+    if (bst[i]) vn_set[index][index].emplace_back(i);
   }
 }
 void omp_for_4(int len, int start) {
+  bitset<MAX_VN> bst;
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
     // 按需枚举
@@ -75,10 +81,13 @@ void omp_for_4(int len, int start) {
         for (int i = right; i > left; --i) {
           dp[start][end][p2[i].parent] +=
               dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
-          vn_set[start][end].insert(p2[i].parent);
+          bst.set(p2[i].parent);
         }
       }
     }
+  }
+  for (int i = 0; i < vn_num; ++i) {
+    if (bst[i]) vn_set[start][end].emplace_back(i);
   }
 }
 
