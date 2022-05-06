@@ -1,5 +1,7 @@
-#pragma GCC optimize("O2")
+#pragma GCC optimize("Ofast")
+#include <algorithm>
 #include <cstdio>
+#include <set>
 
 using namespace std;
 
@@ -9,9 +11,23 @@ const int MAX_VN = 128;
 const int MAX_VT = 128;
 const int MAX_SLEN = 1024;
 
+typedef struct Production1 {
+  int parent;
+  int child;
+} Production1;
+typedef struct Production2 {
+  int parent;
+  int child1;
+  int child2;
+} Production2;
+typedef struct Interval {
+  int end;
+  int len;
+} Interval;
+
 int vn_num, p2_num, p1_num, slen;
-int p2[MAX_PRODUCTION2_NUM][3];
-int p1[MAX_PRODUCTION1_NUM][2];
+Production2 p2[MAX_PRODUCTION2_NUM];
+Production1 p1[MAX_PRODUCTION1_NUM];
 char str[MAX_SLEN];
 int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况总数的映射
 
@@ -19,8 +35,8 @@ int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况�
 void omp_for_1(int index) {
   // 枚举所有终结产生式
   for (int k = 0; k < p1_num; ++k) {
-    if (str[index] == p1[k][1]) {
-      dp[index][index][p1[k][0]] = 1;
+    if (str[index] == p1[k].child) {
+      dp[index][index][p1[k].parent] = 1;
     }
   }
 }
@@ -29,10 +45,43 @@ void omp_for_2(int len, int start) {
   for (int mid = start; mid < end; ++mid) {
     // 枚举所有非终结产生式
     for (int i = 0; i < p2_num; ++i) {
-      dp[start][end][p2[i][0]] +=
-          dp[start][mid][p2[i][1]] * dp[mid + 1][end][p2[i][2]];
+      dp[start][end][p2[i].parent] +=
+          dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
     }
   }
+}
+
+// 对于结果总数较小的情况，进行按需计算
+Interval c2i[MAX_VN][MAX_VN];  // 将产生式的两个child，映射到产生式的index范围
+set<int> vn_set[MAX_SLEN][MAX_SLEN];  // 区间 [i, j] 可以由哪些非终结符推导出来
+
+void omp_for_3(int index) {
+  // 枚举所有终结产生式
+  for (int k = 0; k < p1_num; ++k) {
+    if (str[index] == p1[k].child) {
+      dp[index][index][p1[k].parent] = 1;
+      vn_set[index][index].insert(p1[k].parent);
+    }
+  }
+}
+void omp_for_4(int len, int start) {
+  int end = start + len - 1;
+  set<int> vn_set_tmp;
+  for (int mid = start; mid < end; ++mid) {
+    // 按需枚举
+    for (auto vn1 : vn_set[start][mid]) {
+      for (auto vn2 : vn_set[mid + 1][end]) {
+        int right = c2i[vn1][vn2].end;
+        int left = right - c2i[vn1][vn2].len;
+        for (int i = right; i > left; --i) {
+          dp[start][end][p2[i].parent] +=
+              dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
+          vn_set_tmp.insert(p2[i].parent);
+        }
+      }
+    }
+  }
+  vn_set[start][end] = vn_set_tmp;
 }
 
 int main() {
@@ -40,22 +89,61 @@ int main() {
   scanf("%d\n", &vn_num);
   scanf("%d\n", &p2_num);
   for (int i = 0; i < p2_num; i++)
-    scanf("<%d>::=<%d><%d>\n", &p2[i][0], &p2[i][1], &p2[i][2]);
+    scanf("<%d>::=<%d><%d>\n", &p2[i].parent, &p2[i].child1, &p2[i].child2);
   scanf("%d\n", &p1_num);
-  for (int i = 0; i < p1_num; i++) scanf("<%d>::=%c\n", &p1[i][0], &p1[i][1]);
+  for (int i = 0; i < p1_num; i++)
+    scanf("<%d>::=%c\n", &p1[i].parent, &p1[i].child);
   scanf("%d\n", &slen);
   scanf("%s\n", str);
 
-  #pragma omp parallel for schedule(dynamic)
-  for (int i = 0; i < slen; ++i) {
-    omp_for_1(i);
-  }
-
-  // 区间 dp
-  for (int len = 2; len <= slen; ++len) {
+  if (p2_num < 300 || slen < 500) {
     #pragma omp parallel for schedule(dynamic)
-    for (int start = 0; start <= slen - len; ++start) {
-      omp_for_2(len, start);
+    for (int i = 0; i < slen; ++i) {
+      omp_for_1(i);
+    }
+
+    // 区间 dp
+    for (int len = 2; len <= slen; ++len) {
+      #pragma omp parallel for schedule(dynamic)
+      for (int start = 0; start <= slen - len; ++start) {
+        omp_for_2(len, start);
+      }
+    }
+  } else {
+    // TODO 并行优化，对产生式进行排序
+    sort(p1, p1 + p1_num, [](const Production1& a, const Production1& b) {
+      if (a.parent != b.parent)
+        return a.parent < b.parent;
+      else
+        return a.child < b.child;
+    });
+    sort(p2, p2 + p2_num, [](const Production2& a, const Production2& b) {
+      if (a.child1 != b.child1)
+        return a.child1 < b.child1;
+      else if (a.child2 != b.child2)
+        return a.child2 < b.child2;
+      else
+        return a.parent < b.parent;
+    });
+
+    // 预处理出chlid2index
+    for (int i = 0; i < p2_num; ++i) {
+      c2i[p2[i].child1][p2[i].child2].end = i;
+      c2i[p2[i].child1][p2[i].child2].len++;
+    }
+
+    // dp之前的必要初始化
+    #pragma omp parallel for schedule(dynamic)
+    for (int i = 0; i < slen; ++i) {
+      omp_for_3(i);
+    }
+
+    // 区间 dp
+    for (int len = 2; len <= slen; ++len) {
+      #pragma omp parallel for schedule(dynamic)
+      for (int start = 0; start <= slen - len; ++start) {
+        omp_for_4(len, start);
+      }
     }
   }
 
