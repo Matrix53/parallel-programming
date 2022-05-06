@@ -1,3 +1,4 @@
+#pragma GCC optimize("O2")
 #include <cstdio>
 
 using namespace std;
@@ -14,6 +15,26 @@ int p1[MAX_PRODUCTION1_NUM][2];
 char str[MAX_SLEN];
 int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况总数的映射
 
+// 解决旧版本GCC的OpenMP和optimize编译选项冲突的问题，详情见https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82374
+void omp_for_1(int index) {
+  // 枚举所有终结产生式
+  for (int k = 0; k < p1_num; ++k) {
+    if (str[index] == p1[k][1]) {
+      dp[index][index][p1[k][0]] = 1;
+    }
+  }
+}
+void omp_for_2(int len, int start) {
+  int end = start + len - 1;
+  for (int mid = start; mid < end; ++mid) {
+    // 枚举所有非终结产生式
+    for (int i = 0; i < p2_num; ++i) {
+      dp[start][end][p2[i][0]] +=
+          dp[start][mid][p2[i][1]] * dp[mid + 1][end][p2[i][2]];
+    }
+  }
+}
+
 int main() {
   freopen("input.txt", "r", stdin);
   scanf("%d\n", &vn_num);
@@ -27,24 +48,14 @@ int main() {
 
   #pragma omp parallel for schedule(dynamic)
   for (int i = 0; i < slen; ++i) {
-    // 枚举所有终结产生式
-    for (int k = 0; k < p1_num; ++k) {
-      if (str[i] == p1[k][1]) dp[i][i][p1[k][0]] = 1;
-    }
+    omp_for_1(i);
   }
 
   // 区间 dp
   for (int len = 2; len <= slen; ++len) {
     #pragma omp parallel for schedule(dynamic)
     for (int start = 0; start <= slen - len; ++start) {
-      int end = start + len - 1;
-      for (int mid = start; mid < end; ++mid) {
-        // 枚举所有非终结产生式
-        for (int i = 0; i < p2_num; ++i) {
-          dp[start][end][p2[i][0]] +=
-              dp[start][mid][p2[i][1]] * dp[mid + 1][end][p2[i][2]];
-        }
-      }
+      omp_for_2(len, start);
     }
   }
 
