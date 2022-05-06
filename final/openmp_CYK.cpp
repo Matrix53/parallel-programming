@@ -66,7 +66,6 @@ void omp_for_3(int index) {
 }
 void omp_for_4(int len, int start) {
   int end = start + len - 1;
-  set<int> vn_set_tmp;
   for (int mid = start; mid < end; ++mid) {
     // 按需枚举
     for (auto vn1 : vn_set[start][mid]) {
@@ -76,12 +75,11 @@ void omp_for_4(int len, int start) {
         for (int i = right; i > left; --i) {
           dp[start][end][p2[i].parent] +=
               dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
-          vn_set_tmp.insert(p2[i].parent);
+          vn_set[start][end].insert(p2[i].parent);
         }
       }
     }
   }
-  vn_set[start][end] = vn_set_tmp;
 }
 
 int main() {
@@ -111,12 +109,6 @@ int main() {
     }
   } else {
     // TODO 并行优化，对产生式进行排序
-    sort(p1, p1 + p1_num, [](const Production1& a, const Production1& b) {
-      if (a.parent != b.parent)
-        return a.parent < b.parent;
-      else
-        return a.child < b.child;
-    });
     sort(p2, p2 + p2_num, [](const Production2& a, const Production2& b) {
       if (a.child1 != b.child1)
         return a.child1 < b.child1;
