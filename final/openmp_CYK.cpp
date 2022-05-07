@@ -52,10 +52,10 @@ void omp_for_2(int len, int start) {
 
 // 对于结果总数较小的情况，进行按需计算
 Interval c2i[MAX_VN][MAX_VN];  // 将产生式的两个child，映射到产生式的index范围
-int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];  // 区间 [i, j] 可以由哪些非终结符推导出来，这里用数组模拟vector
+int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];  // 区间 [i, j] 可以由哪些非终结符推导出来，这里用数组手写vector
 
 void omp_for_3(int index) {
-  unsigned long long bs[2] = {0, 0};  // 手写bitset
+  unsigned long long bs[2] = {0, 0};  // 用数组手写bitset
   // 枚举所有终结产生式
   for (int k = 0; k < p1_num; ++k) {
     if (str[index] == p1[k].child) {
@@ -69,7 +69,7 @@ void omp_for_3(int index) {
   }
 }
 void omp_for_4(int len, int start) {
-  unsigned long long bs[2] = {0, 0};  // 手写bitset
+  unsigned long long bs[2] = {0, 0};  // 用数组手写bitset
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
     // 按需计算，组合出所有可能的结果
