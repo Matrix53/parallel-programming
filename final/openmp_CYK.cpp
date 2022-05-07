@@ -1,3 +1,4 @@
+// 最终的目标机是16核的，测试用例为4,5,6号用例
 #pragma GCC optimize("Ofast")
 #include <algorithm>
 #include <cstdio>
@@ -106,7 +107,7 @@ int main() {
 
   if (p2_num < 300 || slen < 500) {
     // dp之前的必要初始化
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic,8)
     for (int i = 0; i < slen; ++i) {
       omp_for_1(i);
     }
@@ -136,7 +137,7 @@ int main() {
     }
 
     // dp之前的必要初始化
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic,8)
     for (int i = 0; i < slen; ++i) {
       omp_for_3(i);
     }
