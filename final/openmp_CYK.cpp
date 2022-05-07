@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <bitset>
 #include <cstdio>
-#include <vector>
 
 using namespace std;
 
@@ -54,7 +53,7 @@ void omp_for_2(int len, int start) {
 
 // 对于结果总数较小的情况，进行按需计算
 Interval c2i[MAX_VN][MAX_VN];  // 将产生式的两个child，映射到产生式的index范围
-vector<int> vn_set[MAX_SLEN][MAX_SLEN];  // 区间 [i, j] 可以由哪些非终结符推导出来
+int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];  // 区间 [i, j] 可以由哪些非终结符推导出来，这里用数组模拟vector
 
 void omp_for_3(int index) {
   bitset<MAX_VN> bst;
@@ -66,7 +65,7 @@ void omp_for_3(int index) {
     }
   }
   for (int i = 0; i < vn_num; ++i) {
-    if (bst[i]) vn_set[index][index].emplace_back(i);
+    if (bst[i]) vn_set[index][index][++vn_set[index][index][0]] = i;
   }
 }
 void omp_for_4(int len, int start) {
@@ -74,8 +73,10 @@ void omp_for_4(int len, int start) {
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
     // 按需枚举
-    for (auto vn1 : vn_set[start][mid]) {
-      for (auto vn2 : vn_set[mid + 1][end]) {
+    for (int i = 1; i <= vn_set[start][mid][0]; ++i) {
+      int vn1 = vn_set[start][mid][i];
+      for (int j = 1; j <= vn_set[mid + 1][end][0]; ++j) {
+        int vn2 = vn_set[mid + 1][end][j];
         int right = c2i[vn1][vn2].end;
         int left = right - c2i[vn1][vn2].len;
         for (int i = right; i > left; --i) {
@@ -87,7 +88,7 @@ void omp_for_4(int len, int start) {
     }
   }
   for (int i = 0; i < vn_num; ++i) {
-    if (bst[i]) vn_set[start][end].emplace_back(i);
+    if (bst[i]) vn_set[start][end][++vn_set[start][end][0]] = i;
   }
 }
 
