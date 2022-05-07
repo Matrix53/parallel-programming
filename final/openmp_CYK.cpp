@@ -72,7 +72,7 @@ void omp_for_4(int len, int start) {
   bitset<MAX_VN> bst;
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
-    // 按需枚举
+    // 按需计算，组合出所有可能的结果
     for (int i = 1; i <= vn_set[start][mid][0]; ++i) {
       int vn1 = vn_set[start][mid][i];
       for (int j = 1; j <= vn_set[mid + 1][end][0]; ++j) {
@@ -105,6 +105,7 @@ int main() {
   scanf("%s\n", str);
 
   if (p2_num < 300 || slen < 500) {
+    // dp之前的必要初始化
     #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < slen; ++i) {
       omp_for_1(i);
