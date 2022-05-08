@@ -135,6 +135,9 @@ void omp_for_6(int len, int start) {
 }
 
 int main() {
+  // 计时开始
+  steady_clock::time_point t1 = steady_clock::now();
+
   freopen("input.txt", "r", stdin);
   scanf("%d\n", &vn_num);
   scanf("%d\n", &p2_num);
@@ -145,9 +148,6 @@ int main() {
     scanf("<%d>::=%c\n", &p1[i].parent, &p1[i].child);
   scanf("%d\n", &slen);
   scanf("%s\n", str);
-
-  // 计时开始
-  steady_clock::time_point t1 = steady_clock::now();
 
   if (vn_num <= 10) {
     // 重新整理Production2
