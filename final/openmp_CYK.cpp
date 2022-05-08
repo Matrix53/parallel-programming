@@ -170,6 +170,11 @@ int main() {
       }
     }
 
+    // 计时结束
+    steady_clock::time_point t2 = steady_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    printf("Total Time: %fs\n", time_span.count());
+
     // 输出结果
     printf("%u\n", dps[0][slen - 1][0]);
   } else if (slen < 500) {
@@ -192,6 +197,11 @@ int main() {
         omp_for_2(len, start);
       }
     }
+
+    // 计时结束
+    steady_clock::time_point t2 = steady_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    printf("Total Time: %fs\n", time_span.count());
 
     // 输出结果
     printf("%u\n", dp[0][slen - 1][0]);
@@ -226,13 +236,13 @@ int main() {
       }
     }
 
+    // 计时结束
+    steady_clock::time_point t2 = steady_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    printf("Total Time: %fs\n", time_span.count());
+
     // 输出结果
     printf("%u\n", dp[0][slen - 1][0]);
   }
-
-  // 计时结束
-  steady_clock::time_point t2 = steady_clock::now();
-  duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-  printf("Total Time: %fs\n", time_span.count());
   return 0;
 }
