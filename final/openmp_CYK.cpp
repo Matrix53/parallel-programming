@@ -12,6 +12,7 @@ const int MAX_PRODUCTION1_NUM = 128;
 const int MAX_VN = 128;
 const int MAX_VT = 128;
 const int MAX_SLEN = 1024;
+const int MAX_SINGLE_PRODUNCTION2 = 24;
 
 typedef struct Production1 {
   int parent;
@@ -32,6 +33,7 @@ Production2 p2[MAX_PRODUCTION2_NUM];
 Production1 p1[MAX_PRODUCTION1_NUM];
 char str[MAX_SLEN];
 int dp[MAX_SLEN][MAX_SLEN][MAX_VN];  // 区间 [i, j] 由非终结符到情况总数的映射
+int p22[MAX_VN][MAX_SINGLE_PRODUNCTION2];                 // 整理Production2，提高空间局部性，用数组手写vector
 
 // 解决旧版本GCC的OpenMP和optimize编译选项冲突的问题，详情见https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82374
 void omp_for_1(int index) {
@@ -46,9 +48,12 @@ void omp_for_2(int len, int start) {
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
     // 枚举所有非终结产生式
-    for (int i = 0; i < p2_num; ++i) {
-      dp[start][end][p2[i].parent] +=
-          dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
+    for (int i = 0; i < vn_num; ++i) {
+      int sum = 0;
+      for (int j = 1; j < p22[i][0]; j += 2) {
+        sum += dp[start][mid][p22[i][j]] * dp[mid + 1][end][p22[i][j + 1]];
+      }
+      dp[start][end][i] += sum;
     }
   }
 }
@@ -113,6 +118,12 @@ int main() {
   steady_clock::time_point t1 = steady_clock::now();
 
   if (p2_num < 300 || slen < 500) {
+    // 重新整理Production2
+    for (int i = 0; i < p2_num; ++i) {
+      p22[p2[i].parent][++p22[p2[i].parent][0]] = p2[i].child1;
+      p22[p2[i].parent][++p22[p2[i].parent][0]] = p2[i].child2;
+    }
+
     // dp之前的必要初始化
     #pragma omp parallel for schedule(dynamic, 8)
     for (int i = 0; i < slen; ++i) {
