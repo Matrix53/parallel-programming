@@ -2,8 +2,10 @@
 #pragma GCC optimize("Ofast")
 #include <algorithm>
 #include <cstdio>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 const int MAX_PRODUCTION2_NUM = 512;
 const int MAX_PRODUCTION1_NUM = 128;
@@ -105,6 +107,9 @@ int main() {
   scanf("%d\n", &slen);
   scanf("%s\n", str);
 
+  // 计时开始
+  steady_clock::time_point t1 = steady_clock::now();
+
   if (p2_num < 300 || slen < 500) {
     // dp之前的必要初始化
     #pragma omp parallel for schedule(dynamic,8)
@@ -150,6 +155,11 @@ int main() {
       }
     }
   }
+
+  // 计时结束
+  steady_clock::time_point t2 = steady_clock::now();
+  duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+  printf("Total Time: %.3fs\n",time_span.count());
 
   printf("%u\n", dp[0][slen - 1][0]);
   return 0;
