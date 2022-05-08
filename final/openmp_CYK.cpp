@@ -1,8 +1,8 @@
 // 最终的目标机是16核的，测试用例为4,5,6号用例
 #pragma GCC optimize("Ofast")
 #include <algorithm>
-#include <cstdio>
 #include <chrono>
+#include <cstdio>
 
 using namespace std;
 using namespace std::chrono;
@@ -54,8 +54,10 @@ void omp_for_2(int len, int start) {
 }
 
 // 对于结果总数较小的情况，进行按需计算
-Interval c2i[MAX_VN][MAX_VN];  // 将产生式的两个child，映射到产生式的index范围
-int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];  // 区间 [i, j] 可以由哪些非终结符推导出来，这里用数组手写vector
+// 将Production2的两个child，映射到Production2的index范围
+Interval c2i[MAX_VN][MAX_VN];
+// 区间 [i, j] 可以由哪些非终结符推导出来，这里用数组手写vector
+int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];
 
 void omp_for_3(int index) {
   unsigned long long bs[2] = {0, 0};  // 用数组手写bitset
@@ -112,7 +114,7 @@ int main() {
 
   if (p2_num < 300 || slen < 500) {
     // dp之前的必要初始化
-    #pragma omp parallel for schedule(dynamic,8)
+    #pragma omp parallel for schedule(dynamic, 8)
     for (int i = 0; i < slen; ++i) {
       omp_for_1(i);
     }
@@ -125,7 +127,7 @@ int main() {
       }
     }
   } else {
-    // TODO 并行优化，对产生式进行排序
+    // TODO 并行优化，对Production2进行排序
     sort(p2, p2 + p2_num, [](const Production2& a, const Production2& b) {
       if (a.child1 != b.child1)
         return a.child1 < b.child1;
@@ -135,14 +137,14 @@ int main() {
         return a.parent < b.parent;
     });
 
-    // 预处理出chlid2index
+    // 预处理出Production2的chlid2index
     for (int i = 0; i < p2_num; ++i) {
       c2i[p2[i].child1][p2[i].child2].end = i;
       c2i[p2[i].child1][p2[i].child2].len++;
     }
 
     // dp之前的必要初始化
-    #pragma omp parallel for schedule(dynamic,8)
+    #pragma omp parallel for schedule(dynamic, 8)
     for (int i = 0; i < slen; ++i) {
       omp_for_3(i);
     }
@@ -159,7 +161,7 @@ int main() {
   // 计时结束
   steady_clock::time_point t2 = steady_clock::now();
   duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-  printf("Total Time: %.3fs\n",time_span.count());
+  printf("Total Time: %fs\n", time_span.count());
 
   printf("%u\n", dp[0][slen - 1][0]);
   return 0;
