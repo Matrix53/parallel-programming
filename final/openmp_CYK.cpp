@@ -93,10 +93,10 @@ void omp_for_4(int len, int start) {
         int vn2 = vn_set[mid + 1][end][j];
         int right = c2i[vn1][vn2].end;
         int left = right - c2i[vn1][vn2].len;
-        for (int i = right; i > left; --i) {
-          dp[start][end][p2[i].parent] +=
-              dp[start][mid][p2[i].child1] * dp[mid + 1][end][p2[i].child2];
-          bs[p2[i].parent >> 6] |= 1llu << p2[i].parent;
+        for (int k = right; k > left; --k) {
+          dp[start][end][p2[k].parent] +=
+              dp[start][mid][p2[k].child1] * dp[mid + 1][end][p2[k].child2];
+          bs[p2[k].parent >> 6] |= 1llu << p2[k].parent;
         }
       }
     }
