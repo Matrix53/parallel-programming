@@ -10,7 +10,7 @@
 
 ## Labs
 
-[Lab1](./lab1/lab1.md): 使用 **MPI** 加速计算 PI 的蒙特卡洛方法
+[Lab1](./lab1/lab1.md): 使用 **MPI** 加速计算 PI 的蒙特卡罗方法
 
 [Lab2](./lab2/lab2.md): 使用 **MPI** 暴力求解 md5 算法的原文
 
