@@ -41,7 +41,7 @@ int p22[MAX_VN][MAX_SINGLE_PRODUNCTION2];
 
 // 解决旧版本GCC的OpenMP和optimize编译选项冲突的问题，详情见https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82374
 void omp_for_1(int index) {
-  // 枚举所有终结产生式
+  // 枚举所有Production1
   for (int k = 0; k < p1_num; ++k) {
     if (str[index] == p1[k].child) {
       dp[index][index][p1[k].parent] = 1;
@@ -51,7 +51,7 @@ void omp_for_1(int index) {
 void omp_for_2(int len, int start) {
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
-    // 枚举所有非终结产生式
+    // 枚举所有Production2
     for (int i = 0; i < vn_num; ++i) {
       int sum = 0;
       for (int j = 1; j < p22[i][0]; j += 2) {
@@ -70,7 +70,7 @@ int vn_set[MAX_SLEN][MAX_SLEN][MAX_VN + 5];
 
 void omp_for_3(int index) {
   unsigned long long bs[2] = {0, 0};  // 用数组手写bitset
-  // 枚举所有终结产生式
+  // 枚举所有Production1
   for (int k = 0; k < p1_num; ++k) {
     if (str[index] == p1[k].child) {
       dp[index][index][p1[k].parent] = 1;
@@ -113,7 +113,7 @@ int dps[MAX_SLEN][MAX_SLEN][MAX_VN_SMALL];
 int p22s[MAX_VN_SMALL][MAX_SINGLE_PRODUNCTION2];
 
 void omp_for_5(int index) {
-  // 枚举所有终结产生式
+  // 枚举所有Production1
   for (int k = 0; k < p1_num; ++k) {
     if (str[index] == p1[k].child) {
       dps[index][index][p1[k].parent] = 1;
@@ -123,7 +123,7 @@ void omp_for_5(int index) {
 void omp_for_6(int len, int start) {
   int end = start + len - 1;
   for (int mid = start; mid < end; ++mid) {
-    // 枚举所有非终结产生式
+    // 枚举所有Production2
     for (int i = 0; i < vn_num; ++i) {
       int sum = 0;
       for (int j = 1; j < p22s[i][0]; j += 2) {
